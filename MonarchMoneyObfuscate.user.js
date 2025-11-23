@@ -165,10 +165,10 @@
     // Masks any dollar amounts within a string to a normalized $*,***.** shape.
     function MTM_maskMoneyValue(s){
         return String(s).replace(MTM_RE_MONEY, function(m){
-            // Standardize to $*,***.** while keeping sign and parentheses
+            // Standardize to $#,###.## while keeping sign and parentheses
             var isNeg = m.trim().startsWith('-$');
             var isParen = /^\(\$/.test(m.trim());
-            var masked = '$*,***.**';
+            var masked = '$#,###.##';
             if(isNeg) masked = '-'+masked;
             if(isParen) masked = '('+masked+')';
             return masked;
@@ -453,7 +453,21 @@
             link.id = 'mtm-obf-master';
             link.href = '#';
             link.setAttribute('role','button');
-            link.className = 'NavLink-sc-1bdi3x9-0 jwNjNr NavBarLink__Container-sc-1xv1ifc-3 dFxBOe NavBarLink-sc-1xv1ifc-4 gmbciN';
+
+            // Extract common classes from first 3 nav links
+            var navLinks = Array.from(navList.querySelectorAll('.NavBarLink__Container-sc-1xv1ifc-3')).slice(0, 3);
+            var classCount = {};
+            navLinks.forEach(function(navLink) {
+                navLink.className.split(/\s+/).forEach(function(cls) {
+                    if (cls) classCount[cls] = (classCount[cls] || 0) + 1;
+                });
+            });
+            // Use classes that appear in at least 2 of the 3 links
+            var commonClasses = Object.keys(classCount).filter(function(cls) {
+                return classCount[cls] >= 2;
+            }).join(' ');
+            link.className = commonClasses;
+
             link.setAttribute('data-state','closed');
             // Always keep as last item of the primary group
             link.style.order = '9999';
@@ -472,7 +486,7 @@
 
             var title = document.createElement('span');
             title.className = 'NavBarLink__Title-sc-1xv1ifc-2';
-            title.textContent = 'Obfuscate Balances';
+            title.textContent = 'Obfuscate';
 
             link.appendChild(iconWrap);
             link.appendChild(title);
